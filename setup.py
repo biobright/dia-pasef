@@ -22,10 +22,12 @@ setup(name='diapysef',
           'matplotlib',
           'statsmodels',
           'pyopenms',
-          'patsy'],
+          'patsy',
+          'timsdata'],
       package_data={
           'diapysef': ['data/*']
       },
+      include_package_data=True,
       scripts=['scripts/get_dia_windows.py',
                'scripts/annotate_mq_ionmobility.py',
                'scripts/plot_dia_windows.py',
