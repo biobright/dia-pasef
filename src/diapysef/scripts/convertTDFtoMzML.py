@@ -246,7 +246,7 @@ def handle_compressed_frame(allmz, allint, allim, mslevel, rtime, center, width)
     return sframe
 
 
-def get_consumer(output_fname):
+def get_consumer(output_fname, verbose=False, USE_ZLIB=True, USE_NUMPRESS=True):
     # Store output
     if output_fname.lower().endswith("mzml"):
         consumer = pyopenms.PlainMSDataWritingConsumer(output_fname)
@@ -254,7 +254,7 @@ def get_consumer(output_fname):
         # Compress output
         try:
             opt = consumer.getOptions()
-            diapysef.util.setCompressionOptions(opt)
+            diapysef.util.setCompressionOptions(opt, verbose=verbose, USE_ZLIB=USE_ZLIB, USE_NUMPRESS=USE_NUMPRESS)
             consumer.setOptions(opt)
         except Exception as e:
             print(e)
@@ -306,6 +306,16 @@ def main():
                         nargs = 2,
                         default = [-1, -1],
                         dest = "frame_limit")
+    parser.add_argument("-z", "--use_zlib",
+                        help = "Use zlib compression?",
+                        type = bool,
+                        default = False,
+                        dest = "use_zlib")
+    parser.add_argument("-n", "--use_numpress",
+                        help = "Use numpress compression? NB - This uses hardcoded numpress params",
+                        type = bool,
+                        default = False,
+                        dest = "use_numpress")
     args = parser.parse_args()
     print("Running conversion with these parameters:\n ")
     analysis_dir = args.analysis_dir
@@ -342,7 +352,7 @@ def main():
     N = row[0]
     print("Analysis has {0} frames.".format(N))
 
-    consumer = get_consumer(output_fname)
+    consumer = get_consumer(output_fname, verbose=verbose=args.verbosity > 1, USE_ZLIB=args.use_zlib, USE_NUMPRESS=args.use_numpress)
 
     if merge_scans != -1:
         consumer = diapysef.merge_consumer.MergeConsumer(consumer, merge_scans)
@@ -356,7 +366,7 @@ def main():
         for k in range(overlap_scans):
             outspl = output_fname.rsplit(".", 1)
             outname = outspl[0] + "_" + str(k) + "." + outspl[1]
-            consumer = get_consumer(outname)
+            consumer = get_consumer(outname, verbose=verbose=args.verbosity > 1, USE_ZLIB=args.use_zlib, USE_NUMPRESS=args.use_numpress)
             consumers.append(consumer)
 
         if merge_scans != -1:
