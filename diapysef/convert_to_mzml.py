@@ -386,6 +386,24 @@ def run(
     # For many, it doesn't strictly HAVE to be correct - just greater than zero.
     # Setter is .setExpectedSize(NSpectra, NChromatograms)
     consumer.setExpectedSize(N, N_chromatograms)
+    
+    #### BEGIN METADATA TO MZML FILE
+    
+    # Get Global Metadata
+    raw_tims_global_metadata = conn.execute('SELECT * FROM GlobalMetadata').fetchall()
+    tims_global_metadata = dict(raw_tims_global_metadata)
+    
+    experimental_settings = pyopenms.ExperimentalSettings()
+    
+    # NB: I think it isn't correcting for time zone
+    dt = pyopenms.DateTime()
+    dt.set(tims_global_metadata['AcquisitionDateTime'])
+    experimental_settings.setDateTime(dt)
+    
+    # And finally write the experimental settings section to mzml
+    consumer.setExperimentalSettings(experimental_settings)
+    
+    ### END ADD METADATA TO MZML FILE
 
     if merge_scans != -1:
         consumer = diapysef.merge_consumer.MergeConsumer(consumer, merge_scans)
