@@ -337,6 +337,7 @@ def run(
     frame_limit=[-1, -1],
     use_zlib=True,
     use_numpress=False,
+    clone_instrument_and_model=True,
 ):
     _args = dict(
         analysis_dir=analysis_dir,
@@ -417,6 +418,11 @@ def run(
     instrument.setName(tims_global_metadata['InstrumentName'])
     experimental_settings.setInstrument(instrument)
 
+    # Convenience - List InstrumentModel as Model
+    if clone_instrument_and_model:
+        tims_global_metadata['Model'] = tims_global_metadata['InstrumentName']
+        tims_global_metadata['Instrument'] = tims_global_metadata['InstrumentName']
+    
     # Copy all TIMS GlobalMetadata to ExperimentSettings metadata vlues
     # Some of them are redundant / belong elsewhere, this is just in case
     for k,v in tims_global_metadata.items(): 
