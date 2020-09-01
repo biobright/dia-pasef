@@ -13,6 +13,8 @@ import diapysef.util
 
 from json import dumps
 
+from collections import defaultdict
+
 def store_frame(
     frame_id, td, conn, exp, verbose=False, compressFrame=True, keep_frames=False
 ):
@@ -391,7 +393,10 @@ def run(
     
     # Get Global Metadata
     raw_tims_global_metadata = conn.execute('SELECT * FROM GlobalMetadata').fetchall()
-    tims_global_metadata = dict(raw_tims_global_metadata)
+    _tims_global_metadata = dict(raw_tims_global_metadata)
+    # Write empty value instead of crashing
+    tims_global_metadata = defaultdict(lambda: '')
+    tims_global_metadata.update(_tims_global_metadata)
     
     experimental_settings = pyopenms.ExperimentalSettings()
     
@@ -400,6 +405,23 @@ def run(
     dt.set(tims_global_metadata['AcquisitionDateTime'])
     experimental_settings.setDateTime(dt)
     
+    software = pyopenms.Software()
+    software.setName(tims_global_metadata['AcquisitionSoftware'])
+    software.setVersion(tims_global_metadata['AcquisitionSoftwareVersion'])
+
+    instrument = pyopenms.Instrument()
+    instrument.setSoftware(software)
+    instrument.setVendor(tims_global_metadata['InstrumentVendor'])
+    # No separate "model" descriptor in TIMS data
+    instrument.setModel(tims_global_metadata['InstrumentName'])
+    instrument.setName(tims_global_metadata['InstrumentName'])
+    experimental_settings.setInstrument(instrument)
+
+    # Copy all TIMS GlobalMetadata to ExperimentSettings metadata vlues
+    # Some of them are redundant / belong elsewhere, this is just in case
+    for k,v in tims_global_metadata.items(): 
+        experimental_settings.setMetaValue(k,v)
+
     # And finally write the experimental settings section to mzml
     consumer.setExperimentalSettings(experimental_settings)
     
