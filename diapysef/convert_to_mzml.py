@@ -425,7 +425,7 @@ def run(
     # Copy all TIMS GlobalMetadata to ExperimentSettings metadata vlues
     # Some of them are redundant / belong elsewhere, this is just in case
     for k,v in tims_global_metadata.items(): 
-        #experimental_settings.setMetaValue(k,v)
+        experimental_settings.setMetaValue(k,v)
         instrument.setMetaValue(k,v)
 
     # And finally write the experimental settings section to mzml
